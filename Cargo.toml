@@ -1,0 +1,10 @@
+[package]
+name = "clovis"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.66"
+clap = { version = "4.0.26", features = ["derive", "color"] }
+crossterm = "0.25.0"
+ctrlc = "3.2.3"
