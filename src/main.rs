@@ -10,7 +10,7 @@ use std::{
 use anyhow::Result;
 use clap::{ColorChoice, Parser, Subcommand};
 use engine::run_shader;
-use shader::WavesShader;
+use shader::{waves::WavesShader, blobs::BlobsShader};
 
 mod engine;
 mod renderer;
@@ -41,7 +41,7 @@ pub enum Mode {
         #[arg(short = 's', long = "scale", help = "Scale of surface")]
         scale: Option<f32>,
     },
-    Placeholder,
+    Blobs,
 }
 
 pub struct Settings {
@@ -109,7 +109,7 @@ fn main() -> Result<()> {
 
     match args.mode {
         Mode::Waves { .. } => waves(&mut state)?,
-        _ => (),
+        Mode::Blobs => blobs(&mut state)?,
     }
 
     Ok(())
@@ -117,5 +117,10 @@ fn main() -> Result<()> {
 
 fn waves(state: &mut State) -> Result<()> {
     run_shader(state, WavesShader)?;
+    Ok(())
+}
+
+fn blobs(state: &mut State) -> Result<()> {
+    run_shader(state, BlobsShader)?;
     Ok(())
 }
