@@ -1,6 +1,4 @@
 use std::{
-    collections::HashMap,
-    default,
     io::{stdout, Stdout},
     sync::{
         atomic::{AtomicBool, Ordering},

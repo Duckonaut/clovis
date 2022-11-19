@@ -33,6 +33,7 @@ pub trait Shader {
     fn get_params(&self, state: &State) -> Result<Self::Params>;
 }
 
+// Based on https://www.shadertoy.com/view/XsVSzW
 pub struct WavesShader;
 
 pub struct WavesParams {
