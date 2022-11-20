@@ -46,9 +46,9 @@ impl Default for CharGraphic {
     }
 }
 
-pub fn run_shader<S>(state: &mut State, shader: S) -> Result<()>
+pub fn run_shader<'s, S>(state: &mut State, shader: S, params: S::Params<'s>) -> Result<()>
 where
-    S: Shader,
+    S: Shader<'s>,
 {
     let interval = 1.0 / state.settings.refresh as f32;
 
@@ -60,10 +60,12 @@ where
         cursor::MoveTo(0, 0)
     )?;
 
+    let mut params = params;
+
     loop {
         let loop_start = SystemTime::now();
 
-        loop_run(state, &shader)?;
+        loop_run(state, &shader, &mut params)?;
 
         if !state.running.load(std::sync::atomic::Ordering::Relaxed) {
             break;
@@ -77,15 +79,19 @@ where
     Ok(())
 }
 
-pub fn loop_run<S>(state: &mut State, shader: &S) -> Result<()>
+pub fn loop_run<'s, S>(
+    state: &mut State,
+    shader: &S,
+    params: &mut S::Params<'s>,
+) -> Result<()>
 where
-    S: Shader,
+    S: Shader<'s>,
 {
-    let params = shader.get_params(state)?;
+    shader.update_params(state, params)?;
 
     execute!(state.stdout, cursor::MoveTo(0, 0))?;
 
-    let shader_output = shader.run(state, &params);
+    let shader_output = shader.run(state, params);
     render(state, shader_output)?;
     state.stdout.flush()?;
 

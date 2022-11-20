@@ -10,7 +10,7 @@ use std::{
 use anyhow::Result;
 use clap::{ColorChoice, Parser, Subcommand};
 use engine::run_shader;
-use shader::{waves::WavesShader, blobs::BlobsShader};
+use shader::{blobs::{BlobsShader, BlobsParams}, waves::{WavesShader, WavesParams}};
 
 mod engine;
 mod renderer;
@@ -116,11 +116,42 @@ fn main() -> Result<()> {
 }
 
 fn waves(state: &mut State) -> Result<()> {
-    run_shader(state, WavesShader)?;
+    let params = WavesParams {
+        size: state.settings.size,
+        time: 0.0,
+        iterations: if let Mode::Waves { iterations, .. } = state.settings.mode_args {
+            iterations.unwrap_or(5)
+        } else {
+            panic!(
+                "Bad mode in settings for shader {}",
+                stringify!(WavesShader)
+            )
+        },
+        scale: if let Mode::Waves { scale, .. } = state.settings.mode_args {
+            scale.unwrap_or(10.0)
+        } else {
+            panic!(
+                "Bad mode in settings for shader {}",
+                stringify!(WavesShader)
+            )
+        },
+    };
+    run_shader(state, WavesShader, params)?;
     Ok(())
 }
 
 fn blobs(state: &mut State) -> Result<()> {
-    run_shader(state, BlobsShader)?;
+    let mut count = 0;
+
+    let params = BlobsParams {
+        size: state.settings.size,
+        time: 0.0,
+        times_ran: &mut count,
+    };
+
+    run_shader(state, BlobsShader, params)?;
+
+    println!("Ran {} times", count);
+
     Ok(())
 }

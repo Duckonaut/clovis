@@ -1,4 +1,4 @@
-use crate::{State, Mode};
+use crate::State;
 use anyhow::Result;
 
 use super::{Shader, ShaderOutput};
@@ -7,16 +7,16 @@ use super::{Shader, ShaderOutput};
 pub struct WavesShader;
 
 pub struct WavesParams {
-    size: (u16, u16),
-    time: f32,
-    iterations: usize,
-    scale: f32,
+    pub size: (u16, u16),
+    pub time: f32,
+    pub iterations: usize,
+    pub scale: f32,
 }
 
-impl Shader for WavesShader {
-    type Params = WavesParams;
+impl<'s> Shader<'s> for WavesShader {
+    type Params<'p> = WavesParams where 'p: 's;
 
-    fn pixel(&self, pos: (u16, u16), params: &Self::Params) -> ShaderOutput {
+    fn pixel(&self, pos: (u16, u16), params: &Self::Params<'s>) -> ShaderOutput {
         let mut normalized = (
             pos.0 as f32 / params.size.0 as f32 * params.scale,
             pos.1 as f32 / params.size.1 as f32 * params.scale,
@@ -55,26 +55,9 @@ impl Shader for WavesShader {
         }
     }
 
-    fn get_params(&self, state: &State) -> Result<Self::Params> {
-        Ok(WavesParams {
-            size: state.settings.size,
-            time: state.start.elapsed()?.as_secs_f32(),
-            iterations: if let Mode::Waves { iterations, .. } = state.settings.mode_args {
-                iterations.unwrap_or(5)
-            } else {
-                panic!(
-                    "Bad mode in settings for shader {}",
-                    stringify!(WavesShader)
-                )
-            },
-            scale: if let Mode::Waves { scale, .. } = state.settings.mode_args {
-                scale.unwrap_or(10.0)
-            } else {
-                panic!(
-                    "Bad mode in settings for shader {}",
-                    stringify!(WavesShader)
-                )
-            },
-        })
+    fn update_params(&self, state: &State, params: &mut Self::Params<'s>) -> Result<()> {
+        params.time = state.start.elapsed()?.as_secs_f32();
+
+        Ok(())
     }
 }

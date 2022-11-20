@@ -6,14 +6,20 @@ pub mod waves;
 
 pub type ShaderOutput = CharGraphic;
 
-pub trait Shader {
-    type Params;
-
-    fn pixel(&self, pos: (u16, u16), params: &Self::Params) -> ShaderOutput;
-
-    fn run<'s, 'p>(&self, state: &'s mut State, params: &'p Self::Params) -> Vec<ShaderOutput>
+pub trait Shader<'s> {
+    type Params<'p>
     where
-        's: 'p,
+        'p: 's;
+
+    fn pixel(&self, pos: (u16, u16), params: &Self::Params<'s>) -> ShaderOutput;
+
+    fn run<'st, 'pa>(
+        &self,
+        state: &'st mut State,
+        params: &'pa Self::Params<'s>,
+    ) -> Vec<ShaderOutput>
+    where
+        'st: 'pa,
     {
         let mut out: Vec<ShaderOutput> = {
             let mut v = Vec::new();
@@ -33,5 +39,7 @@ pub trait Shader {
         out
     }
 
-    fn get_params(&self, state: &State) -> Result<Self::Params>;
+    fn update_params(&self, _state: &State, _params: &mut Self::Params<'s>) -> Result<()> {
+        Ok(())
+    }
 }

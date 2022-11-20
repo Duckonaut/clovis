@@ -1,15 +1,15 @@
-use crate::{Mode, State};
+use crate::State;
 use anyhow::Result;
-use crossterm::style::Color;
 
 use super::{Shader, ShaderOutput};
 
 // Based on https://www.shadertoy.com/view/XsVSzW
 pub struct BlobsShader;
 
-pub struct BlobsParams {
-    size: (u16, u16),
-    time: f32,
+pub struct BlobsParams<'p> {
+    pub size: (u16, u16),
+    pub time: f32,
+    pub times_ran: &'p mut usize,
 }
 const K: f32 = 20.0;
 
@@ -34,10 +34,10 @@ fn gradient(shade: f32) -> (f32, f32, f32) {
     (shade, shade, shade)
 }
 
-impl Shader for BlobsShader {
-    type Params = BlobsParams;
+impl<'s> Shader<'s> for BlobsShader {
+    type Params<'p> = BlobsParams<'p> where 'p: 's;
 
-    fn pixel(&self, pos: (u16, u16), params: &Self::Params) -> ShaderOutput {
+    fn pixel(&self, pos: (u16, u16), params: &Self::Params<'s>) -> ShaderOutput {
         let normalized = (
             pos.0 as f32 / params.size.0 as f32,
             pos.1 as f32 / params.size.1 as f32,
@@ -114,10 +114,10 @@ impl Shader for BlobsShader {
         }
     }
 
-    fn get_params(&self, state: &State) -> Result<Self::Params> {
-        Ok(BlobsParams {
-            size: state.settings.size,
-            time: state.start.elapsed()?.as_secs_f32(),
-        })
+    fn update_params(&self, state: &State, params: &mut Self::Params<'s>) -> Result<()> {
+        params.time = state.start.elapsed()?.as_secs_f32();
+        *params.times_ran += 1;
+
+        Ok(())
     }
 }
