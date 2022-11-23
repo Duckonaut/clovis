@@ -75,15 +75,15 @@ where
         ));
     }
 
-    execute!(state.stdout, LeaveAlternateScreen)?;
+    execute!(
+        state.stdout,
+        cursor::SetCursorShape(cursor::CursorShape::Block),
+        LeaveAlternateScreen
+    )?;
     Ok(())
 }
 
-pub fn loop_run<'s, S>(
-    state: &mut State,
-    shader: &S,
-    params: &mut S::Params<'s>,
-) -> Result<()>
+pub fn loop_run<'s, S>(state: &mut State, shader: &S, params: &mut S::Params<'s>) -> Result<()>
 where
     S: Shader<'s>,
 {
