@@ -10,7 +10,10 @@ use std::{
 use anyhow::Result;
 use clap::{ColorChoice, Parser, Subcommand};
 use engine::run_shader;
-use shader::{blobs::{BlobsShader, BlobsParams}, waves::{WavesShader, WavesParams}};
+use shader::{
+    blobs::{BlobsParams, BlobsShader},
+    waves::{WavesParams, WavesShader},
+};
 
 mod engine;
 mod renderer;
